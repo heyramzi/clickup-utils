@@ -1,0 +1,5 @@
+# Generated SDK (re-generate with: node scripts/generate-sdk/index.mjs)
+generated/
+
+# Cached OpenAPI specs
+.claude/specs/

@@ -17,8 +17,6 @@ export enum ChatChannelType {
 export enum ChannelSubcategoryType {
 	CHAT = 1,
 	PROJECT = 2,
-	TYPE_3 = 3,
-	TYPE_4 = 4,
 }
 
 /**
@@ -202,12 +200,9 @@ export enum MessageType {
 }
 
 /**
- * Triaged action applied to a message
+ * Triaged action applied to a message (API semantics undocumented)
  */
-export enum TriagedAction {
-	ACTION_1 = 1,
-	ACTION_2 = 2,
-}
+export type TriagedAction = 1 | 2;
 
 /**
  * Post message data
@@ -389,14 +384,6 @@ export interface MessageRepliesResponse {
 	next_cursor: string;
 	data: ChatMessage[];
 }
-
-/**
- * Delete message operation
- * DELETE /api/v3/workspaces/{workspace_id}/chat/messages/{message_id}
- *
- * Returns 204 No Content on success (no response body)
- * Path params: workspace_id (number), message_id (string)
- */
 
 //===============================================
 // MESSAGE REACTIONS

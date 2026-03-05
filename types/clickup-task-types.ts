@@ -331,13 +331,15 @@ export interface GetFilteredTasksParams extends BaseTaskParams {
 export interface CreateTaskData {
 	name: string; // Required
 	description?: string;
-	assignees?: number[];
+	markdown_description?: string;
+	assignees?: (string | number)[];
 	tags?: string[];
 	status?: string;
 	priority?: ClickUpTaskPriority;
 	due_date?: number;
 	start_date?: number;
 	time_estimate?: number;
+	parent?: string;
 	custom_fields?: Array<{
 		id: string;
 		value: unknown;

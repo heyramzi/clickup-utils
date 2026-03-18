@@ -103,3 +103,15 @@ Changes here affect all of them — test accordingly.
 5. **generate-barrel.mjs** — Emits barrel `index.ts` files
 
 The generator detects dynamic maps, handles circular refs, unifies response types across status codes, and supports multipart uploads.
+
+## Workflow
+- Read `AGENTS.md` first (it links to this file).
+- Keep changes focused and minimal.
+- Run relevant checks before finishing.
+- Stage only intended files.
+
+## Bug-Fix Protocol
+
+When a bug is reported, do NOT start by trying to fix it. Instead:
+1. First, write a test that reproduces the bug (the test should fail)
+2. Then, use subagents to fix the bug and prove the fix with the now-passing test

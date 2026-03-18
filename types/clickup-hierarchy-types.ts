@@ -108,6 +108,7 @@ export interface ClickUpSpace {
 	name: string;
 	color?: string;
 	private?: boolean;
+	avatar?: string | null;
 	features?: ClickUpSpaceFeatures;
 }
 

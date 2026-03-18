@@ -21,7 +21,9 @@ export interface TimeEntry {
 			status: string;
 			color: string;
 			type?: string;
+			orderindex?: number;
 		};
+		custom_type?: number;
 		custom_id?: string;
 	};
 	wid: string; // Workspace ID
@@ -30,6 +32,7 @@ export interface TimeEntry {
 		username: string;
 		email: string;
 		color: string;
+		initials?: string;
 		profilePicture?: string;
 	};
 	billable: boolean;
@@ -39,11 +42,13 @@ export interface TimeEntry {
 	description: string;
 	tags?: Array<{ name: string; tag_fg: string; tag_bg: string }>;
 	source: string;
-	at: string; // ISO timestamp when entry was created
+	at: string; // Timestamp when entry was created/updated
+	is_locked: boolean;
+	approval_id: string | null;
 	task_location?: {
-		list_id: number;
-		folder_id: number;
-		space_id: number;
+		list_id: string;
+		folder_id: string;
+		space_id: string;
 	};
 	task_url?: string;
 }

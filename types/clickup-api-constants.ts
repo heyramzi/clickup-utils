@@ -61,6 +61,29 @@ export enum Endpoint {
 	CHAT_CHANNEL_LOCATION = "/chat/channels/location",
 	CHAT_DIRECT_MESSAGE = "/chat/channels/direct_message",
 	CHAT_CHANNEL_MESSAGES = "/chat/channels/{channel_id}/messages",
+	CHAT_CHANNEL_MEMBERS = "/chat/channels/{channel_id}/members",
+	CHAT_CHANNEL_FOLLOWERS = "/chat/channels/{channel_id}/followers",
+	CHAT_MESSAGE = "/chat/messages/{message_id}",
+	CHAT_MESSAGE_REPLIES = "/chat/messages/{message_id}/replies",
+	CHAT_MESSAGE_REACTIONS = "/chat/messages/{message_id}/reactions",
+	CHAT_MESSAGE_REACTION = "/chat/messages/{message_id}/reactions/{reaction}",
+	CHAT_MESSAGE_TAGGED_USERS = "/chat/messages/{message_id}/tagged_users",
+
+	// v3 Docs API endpoints
+	DOCS = "/docs",
+	DOC = "/docs/{doc_id}",
+	DOC_PAGE_LISTING = "/docs/{doc_id}/pagelisting",
+	DOC_PAGES = "/docs/{doc_id}/pages",
+	DOC_PAGE = "/docs/{doc_id}/pages/{page_id}",
+
+	// v3 Attachments API endpoints
+	ENTITY_ATTACHMENTS = "/{entity_type}/{entity_id}/attachments",
+
+	// v3 Audit Logs API endpoint
+	AUDIT_LOGS = "/auditlogs",
+
+	// v3 ACLs API endpoint
+	ACLS = "/{object_type}/{object_id}/acls",
 }
 
 // Simple utility to create endpoints with parameters
@@ -76,23 +99,45 @@ export const createEndpoint = (
 };
 
 // Centralized path builder for ClickUp API endpoints
+// v2 paths are relative to /api/v2, v3 paths are relative to /api/v3/workspaces/{workspace_id}
 export const CLICKUP_PATH = {
-	// Authentication endpoint for token exchange
 	oauth: () => "/oauth/token",
-	// Get current user details
 	user: () => "/user",
-	// Get workspace (team) information
 	workspace: () => "/team",
-	// Document-related endpoints grouped together
 	docs: {
-		// Get all docs in a workspace
 		list: (workspaceId: string) => `/workspaces/${workspaceId}/docs`,
-		// Get hierarchical page structure of a doc
+		get: (workspaceId: string, docId: string) =>
+			`/workspaces/${workspaceId}/docs/${docId}`,
 		pageListing: (workspaceId: string, docId: string) =>
 			`/workspaces/${workspaceId}/docs/${docId}/pagelisting`,
-		// Get full content of all pages in a doc
 		pages: (workspaceId: string, docId: string) =>
 			`/workspaces/${workspaceId}/docs/${docId}/pages`,
+		page: (workspaceId: string, docId: string, pageId: string) =>
+			`/workspaces/${workspaceId}/docs/${docId}/pages/${pageId}`,
+	},
+	chat: {
+		channels: (workspaceId: string) =>
+			`/workspaces/${workspaceId}/chat/channels`,
+		channel: (workspaceId: string, channelId: string) =>
+			`/workspaces/${workspaceId}/chat/channels/${channelId}`,
+		locationChannel: (workspaceId: string) =>
+			`/workspaces/${workspaceId}/chat/channels/location`,
+		directMessage: (workspaceId: string) =>
+			`/workspaces/${workspaceId}/chat/channels/direct_message`,
+		messages: (workspaceId: string, channelId: string) =>
+			`/workspaces/${workspaceId}/chat/channels/${channelId}/messages`,
+		members: (workspaceId: string, channelId: string) =>
+			`/workspaces/${workspaceId}/chat/channels/${channelId}/members`,
+		followers: (workspaceId: string, channelId: string) =>
+			`/workspaces/${workspaceId}/chat/channels/${channelId}/followers`,
+		message: (workspaceId: string, messageId: string) =>
+			`/workspaces/${workspaceId}/chat/messages/${messageId}`,
+		replies: (workspaceId: string, messageId: string) =>
+			`/workspaces/${workspaceId}/chat/messages/${messageId}/replies`,
+		reactions: (workspaceId: string, messageId: string) =>
+			`/workspaces/${workspaceId}/chat/messages/${messageId}/reactions`,
+		taggedUsers: (workspaceId: string, messageId: string) =>
+			`/workspaces/${workspaceId}/chat/messages/${messageId}/tagged_users`,
 	},
 } as const;
 

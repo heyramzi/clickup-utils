@@ -21,6 +21,8 @@
  *   clickup comments add <taskId>    Add a comment
  *   clickup time                     List time entries
  *   clickup tags --space <id>        List space tags
+ *   clickup chat list                List chat channels
+ *   clickup chat read <channelId>   Read messages from a channel
  *   clickup open <taskId>            Open task in browser
  */
 
@@ -39,6 +41,7 @@ import { runTimeCommand } from "./commands/time.js";
 import { runHierarchyCommand } from "./commands/hierarchy.js";
 import { runOpenCommand } from "./commands/open.js";
 import { runTagsCommand } from "./commands/tags.js";
+import { runChatListCommand, runChatReadCommand } from "./commands/chat.js";
 
 export const program = new Command();
 
@@ -204,6 +207,28 @@ program
 	.requiredOption("--space <id>", "Space ID")
 	.option("--json", "Output as JSON")
 	.action(wrapAction(runTagsCommand));
+
+// ── Chat ──────────────────────────────────────────────
+
+const chat = program
+	.command("chat")
+	.description("List channels or read messages");
+
+chat
+	.command("list")
+	.description("List recent chat channels")
+	.option("--json", "Output as JSON")
+	.option("--limit <n>", "Number of channels to fetch (default: 25)")
+	.option("--team <id>", "Override workspace/team ID")
+	.action(wrapAction(runChatListCommand));
+
+chat
+	.command("read <channelId>")
+	.description("Read messages from a chat channel")
+	.option("--json", "Output as JSON")
+	.option("--limit <n>", "Number of messages to fetch (default: 25)")
+	.option("--team <id>", "Override workspace/team ID")
+	.action(wrapAction(runChatReadCommand));
 
 // ── Browser ───────────────────────────────────────────
 

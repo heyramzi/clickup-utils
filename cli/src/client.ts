@@ -20,8 +20,15 @@ import type {
 	UpdateTaskData,
 } from "../../types/clickup-task-types.js";
 import type { TimeEntry, TimeEntriesResponse } from "../../types/clickup-time-types.js";
+import type {
+	ChatChannel,
+	ChatChannelsResponse,
+	ChatMessage,
+	ChatMessagesResponse,
+} from "../../types/clickup-chat-types.js";
 
 const API_BASE = "https://api.clickup.com/api/v2";
+const API_V3_BASE = "https://api.clickup.com/api/v3";
 
 async function request<T>(
 	endpoint: string,
@@ -246,4 +253,83 @@ export async function getSpaceTags(token: string, spaceId: string): Promise<Arra
 		token,
 	);
 	return res.tags;
+}
+
+// ── Chat (API v3) ────────────────────────────────────
+
+async function requestV3<T>(
+	endpoint: string,
+	token: string,
+	options?: {
+		method?: string;
+		body?: unknown;
+		query?: Record<string, string | undefined>;
+	},
+): Promise<T> {
+	const url = new URL(`${API_V3_BASE}${endpoint}`);
+
+	if (options?.query) {
+		for (const [key, value] of Object.entries(options.query)) {
+			if (value !== undefined) {
+				url.searchParams.set(key, value);
+			}
+		}
+	}
+
+	const init: RequestInit = {
+		method: options?.method || "GET",
+		headers: {
+			Authorization: token,
+			"Content-Type": "application/json",
+		},
+	};
+
+	if (options?.body) {
+		init.body = JSON.stringify(options.body);
+	}
+
+	const response = await fetch(url.toString(), init);
+
+	if (!response.ok) {
+		const errorText = await response.text();
+		throw new Error(`ClickUp API error (${response.status}): ${errorText}`);
+	}
+
+	return response.json() as Promise<T>;
+}
+
+export async function getChatChannels(
+	token: string,
+	workspaceId: string,
+	options?: { limit?: number; cursor?: string },
+): Promise<ChatChannelsResponse> {
+	return requestV3<ChatChannelsResponse>(
+		`/workspaces/${workspaceId}/chat/channels`,
+		token,
+		{
+			query: {
+				limit: String(options?.limit ?? 25),
+				cursor: options?.cursor,
+			},
+		},
+	);
+}
+
+export async function getChatMessages(
+	token: string,
+	workspaceId: string,
+	channelId: string,
+	options?: { limit?: number; cursor?: string },
+): Promise<ChatMessagesResponse> {
+	return requestV3<ChatMessagesResponse>(
+		`/workspaces/${workspaceId}/chat/channels/${channelId}/messages`,
+		token,
+		{
+			query: {
+				limit: String(options?.limit ?? 25),
+				cursor: options?.cursor,
+				content_format: "text/md",
+			},
+		},
+	);
 }

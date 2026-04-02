@@ -1,7 +1,6 @@
 # ClickUp Utils
 
 Universal TypeScript types and services for ClickUp API integration.
-Shared across multiple projects as a git submodule with framework-specific implementations.
 
 ## What's Inside
 

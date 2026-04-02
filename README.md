@@ -5,10 +5,11 @@ Shared across multiple projects as a git submodule with framework-specific imple
 
 ## What's Inside
 
-- **Pure TypeScript types** for ClickUp API v2 & v3 (hand-written, battle-tested)
-- **Auto-generated SDK** from OpenAPI specs (types + API client for every endpoint)
+- **Pure TypeScript types** for ClickUp API v2 & v3 — tasks, hierarchy, chat, docs, views, time tracking, comments, custom fields
+- **Auto-generated SDK** from OpenAPI specs (172 endpoints, 301 types across 29 groups)
 - **Framework-agnostic core** — OAuth protocol, hierarchy API, transformers
-- **Framework integrations** — SvelteKit + Supabase, Next.js (placeholder)
+- **Framework integrations** — SvelteKit + Supabase or Convex, Next.js (placeholder)
+- **CLI** — terminal + AI-agent-friendly interface for tasks, hierarchy, and more
 
 ## Structure
 
@@ -19,8 +20,9 @@ clickup-utils/
 ├── core/                 # Framework-agnostic OAuth protocol
 ├── api/                  # Pure fetch functions (hierarchy endpoints)
 ├── transformers/         # API response → simplified storage format
-├── sveltekit/            # SvelteKit + Supabase OAuth & token storage
+├── sveltekit/            # SvelteKit OAuth & token storage (Supabase or Convex)
 ├── nextjs/               # Next.js OAuth (placeholder)
+├── cli/                  # Command-line interface
 ├── generated/            # Auto-generated SDK from OpenAPI specs (gitignored)
 │   ├── types/            # Generated types per API resource
 │   └── api/              # Generated fetch functions per API resource
@@ -41,6 +43,7 @@ git submodule add https://github.com/heyramzi/clickup-utils src/lib/types/clicku
 
 ```typescript
 import type { Task, ClickUpWorkspace, ClickUpList } from "clickup-utils";
+// Also available: ClickUpChatChannel, ClickUpDoc, ClickUpPage, ClickUpView, TimeEntry, Comment
 ```
 
 ### Core OAuth (Framework-Agnostic)
@@ -82,9 +85,16 @@ const stored = transformWorkspaces(apiWorkspaces); // → StoredWorkspace[]
 
 ### SvelteKit Integration
 
+Token storage supports both **Supabase** and **Convex**:
+
 ```typescript
 import { handleClickUpCallback } from "clickup-utils/sveltekit/oauth.service";
-import { ClickUpTokenStorage } from "clickup-utils/sveltekit/token.service";
+
+// Supabase
+import { ClickUpTokenStorage } from "clickup-utils/sveltekit/token.service.supabase";
+
+// Convex
+import { ClickUpTokenStorage } from "clickup-utils/sveltekit/token.service.convex";
 ```
 
 See [sveltekit/README.md](./sveltekit/README.md) for full examples.
@@ -97,6 +107,35 @@ import type { GetTasksResponse } from "clickup-utils/generated/types/tasks";
 ```
 
 Re-generate with: `node scripts/generate-sdk/index.mjs`
+
+## CLI
+
+A terminal-first, AI-agent-friendly CLI for ClickUp. See [cli/README.md](./cli/README.md) for full docs.
+
+```bash
+cd cli && npm install && npm run build
+
+clickup init          # Interactive auth setup
+clickup hierarchy     # Full workspace tree
+clickup tasks --list <id>
+clickup task create --list <id> --name "..."
+clickup task update <id> --status "done"
+```
+
+**Dual output:** formatted tables in the terminal, JSON when piped or with `--json`.
+
+```bash
+clickup tasks --list 123 --json | jq '.tasks[].name'
+```
+
+| Command group | What it does |
+|---|---|
+| `init` / `status` | Auth setup and workspace info |
+| `workspaces` / `spaces` / `folders` / `lists` / `hierarchy` | Navigate the full hierarchy |
+| `tasks` / `task get/create/update` | List, inspect, and manage tasks |
+| `members` / `comments` / `time` / `tags` / `open` | Collaboration and extras |
+
+Config is stored at `~/.config/clickup/config.json`. Auth can also be set via `CU_API_TOKEN` and `CU_TEAM_ID` env vars.
 
 ## Import Patterns
 

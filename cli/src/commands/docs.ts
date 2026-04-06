@@ -354,7 +354,9 @@ export async function runDocsScanCommand(opts: {
   const BATCH_SIZE = 5;
   for (let i = 0; i < regularDocs.length; i += BATCH_SIZE) {
     const batch = regularDocs.slice(i, i + BATCH_SIZE);
-    progress(`Scanning docs ${i + 1}-${Math.min(i + BATCH_SIZE, regularDocs.length)} of ${regularDocs.length}...`);
+    progress(
+      `Scanning docs ${i + 1}-${Math.min(i + BATCH_SIZE, regularDocs.length)} of ${regularDocs.length}...`,
+    );
     const results = await Promise.all(
       batch.map(async (doc) => {
         try {

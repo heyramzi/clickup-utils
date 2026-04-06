@@ -127,12 +127,12 @@ clickup task update <id> --status "done"
 clickup tasks --list 123 --json | jq '.tasks[].name'
 ```
 
-| Command group | What it does |
-|---|---|
-| `init` / `status` | Auth setup and workspace info |
-| `workspaces` / `spaces` / `folders` / `lists` / `hierarchy` | Navigate the full hierarchy |
-| `tasks` / `task get/create/update` | List, inspect, and manage tasks |
-| `members` / `comments` / `time` / `tags` / `open` | Collaboration and extras |
+| Command group                                               | What it does                    |
+| ----------------------------------------------------------- | ------------------------------- |
+| `init` / `status`                                           | Auth setup and workspace info   |
+| `workspaces` / `spaces` / `folders` / `lists` / `hierarchy` | Navigate the full hierarchy     |
+| `tasks` / `task get/create/update`                          | List, inspect, and manage tasks |
+| `members` / `comments` / `time` / `tags` / `open`           | Collaboration and extras        |
 
 Config is stored at `~/.config/clickup/config.json`. Auth can also be set via `CU_API_TOKEN` and `CU_TEAM_ID` env vars.
 

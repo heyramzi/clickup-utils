@@ -3,24 +3,18 @@
   "version": "0.1.0",
   "description": "ClickUp CLI — manage workspaces, tasks, and more from the terminal",
   "bin": {
-    "clickup": "./dist/bin/clickup.js",
-    "cu": "./dist/bin/clickup.js"
+    "clickup": "./bin/clickup.ts",
+    "cu": "./bin/clickup.ts"
   },
-  "files": [
-    "dist"
-  ],
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
-    "start": "node dist/bin/clickup.js"
+    "start": "npx tsx bin/clickup.ts"
   },
   "dependencies": {
-    "commander": "^14.0.0"
+    "@heyramzi/cli": "file:../../vibe-kit/modules/cli"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
-    "tsup": "^8.4.0",
     "typescript": "^5.7.0"
   },
   "engines": {

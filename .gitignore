@@ -10,3 +10,4 @@ generated/
 # CLI build artifacts and dependencies
 cli/node_modules/
 cli/dist/
+cli/package-lock.json

@@ -37,6 +37,12 @@ import type {
   UpdateTaskData,
 } from "../../types/clickup-task-types.js";
 import type { TimeEntry, TimeEntriesResponse } from "../../types/clickup-time-types.js";
+import type {
+  ClickUpView,
+  ClickUpViewResponse,
+  ClickUpViewsResponse,
+  ViewType,
+} from "../../types/clickup-view-types.js";
 import type { NamedToken } from "./config.js";
 
 const API_V2 = "https://api.clickup.com/api/v2";
@@ -436,6 +442,87 @@ export async function getTimeEntries(
 
   const res = await request<TimeEntriesResponse>(`/team/${teamId}/time_entries`, token, { query });
   return res.data;
+}
+
+// ── Views ────────────────────────────────────────────
+
+export interface CreateViewData {
+  name: string;
+  type: ViewType;
+  grouping?: {
+    field: string;
+    dir?: number;
+    collapsed?: string[];
+    ignore?: boolean;
+  };
+  divide?: {
+    field: string | null;
+    dir?: number | null;
+    collapsed?: boolean;
+  };
+  sorting?: {
+    fields: Array<{ field: string; dir: number }>;
+  };
+  filters?: {
+    op: "AND" | "OR";
+    fields: Array<Record<string, unknown>>;
+    search?: string;
+    show_closed?: boolean;
+  };
+  columns?: {
+    fields: Array<{ field: string; hidden?: boolean; width?: number }>;
+  };
+  team_sidebar?: {
+    assignees: number[];
+    assigned_comments?: boolean;
+    unassigned_tasks?: boolean;
+  };
+  settings?: Record<string, unknown>;
+}
+
+export async function getListViews(token: string, listId: string): Promise<ClickUpView[]> {
+  const res = await request<ClickUpViewsResponse>(`/list/${listId}/view`, token);
+  return res.views ?? [];
+}
+
+export async function createListView(
+  token: string,
+  listId: string,
+  data: CreateViewData,
+): Promise<ClickUpView> {
+  const res = await request<ClickUpViewResponse>(`/list/${listId}/view`, token, {
+    method: "POST",
+    body: data,
+  });
+  return res.view;
+}
+
+export async function createFolderView(
+  token: string,
+  folderId: string,
+  data: CreateViewData,
+): Promise<ClickUpView> {
+  const res = await request<ClickUpViewResponse>(`/folder/${folderId}/view`, token, {
+    method: "POST",
+    body: data,
+  });
+  return res.view;
+}
+
+export async function createSpaceView(
+  token: string,
+  spaceId: string,
+  data: CreateViewData,
+): Promise<ClickUpView> {
+  const res = await request<ClickUpViewResponse>(`/space/${spaceId}/view`, token, {
+    method: "POST",
+    body: data,
+  });
+  return res.view;
+}
+
+export async function deleteView(token: string, viewId: string): Promise<void> {
+  await request<void>(`/view/${viewId}`, token, { method: "DELETE" });
 }
 
 // ── Tags ─────────────────────────────────────────────

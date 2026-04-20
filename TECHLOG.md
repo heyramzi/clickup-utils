@@ -4,6 +4,15 @@ Changelog-style trail of changes, decisions, and discoveries. Most recent first.
 
 ---
 
+## 2026-04-20 (late evening)
+
+- Shipped CLI v0.6.0 adding `views list`, `view create`, `view delete`. Driver: Seraph Immo portfolio list needed 6 views (Portefeuille actif board, Vue dirigeant table, Pipeline commerce board, Chantiers en cours board, Clôtures à finaliser table, Carte map). Creating these by hand 12 times across future clients would be wasted toil, so the CLI gets them.
+- Minimal ergonomic flags for the common case (`--group-by <field>`) plus full JSON passthrough (`--grouping-json`, `--filters-json`, `--sorting-json`, `--columns-json`, `--settings-json`) for the cases where the ClickUp view payload needs surgical control.
+- Endpoints wrapped: `POST /list/{id}/view`, `POST /folder/{id}/view`, `POST /space/{id}/view`, `GET /list/{id}/view`, `DELETE /view/{id}`.
+- Added `CreateViewData` interface mirroring the v2 createListView schema. `ViewType` reused from existing `types/clickup-view-types.ts`.
+
+---
+
 ## 2026-04-20 (evening)
 
 - Shipped CLI v0.5.0 with write commands for workspace structure. Rebased onto origin which had already shipped v0.3.0 (fields render on `task get`) and v0.4.0 (comments update/delete/ids) earlier in the day, so this release bumps straight to v0.5.0.

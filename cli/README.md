@@ -90,6 +90,29 @@ Use `--json-value` on `task field set` when the value is a complex object (relat
 
 **ClickUp API limitation**: custom fields and custom task types cannot be created via API. Configure them once in the ClickUp UI, then use the CLI to populate values.
 
+### Views
+
+| Command                                                                     | Description                                        |
+| --------------------------------------------------------------------------- | -------------------------------------------------- |
+| `clickup views list --list <id>`                                            | List custom views on a list                        |
+| `clickup view create (--list|--folder|--space) <id> --name --type --group-by` | Create a view with minimal ergonomic flags         |
+| `clickup view delete <viewId>`                                              | Delete a view                                      |
+
+View types: `list`, `board`, `table`, `calendar`, `gantt`, `timeline`, `workload`, `activity`, `map`, `conversation`, `doc`.
+
+Simple shortcut: `--group-by status` (or `--group-by cf_<fieldId>` for a custom field).
+
+JSON passthrough flags for advanced shapes: `--grouping-json`, `--filters-json`, `--sorting-json`, `--columns-json`, `--settings-json`. Each takes a raw JSON object matching the ClickUp view schema.
+
+Example, a board grouped by Phase (custom field) with a filter excluding `Fini`:
+
+```bash
+clickup view create --list 901217362151 \
+  --name "Portefeuille actif" --type board \
+  --group-by cf_8b0a1fbc-04d0-448f-b5ae-9ba45b8fc384 \
+  --filters-json '{"op":"AND","fields":[{"field":"cf_8b0a1fbc-04d0-448f-b5ae-9ba45b8fc384","op":"NOT EQUALS","value":"Fini"}]}'
+```
+
 ### Docs
 
 | Command                              | Description                                              |

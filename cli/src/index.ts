@@ -613,6 +613,154 @@ createCLI({
       },
     },
 
+    "views list": {
+      description: "List views on a list",
+      flags: {
+        list: { type: "string", description: "List ID (required)" },
+      },
+      run: async ({ flags, ctx }) => {
+        const listId = flags.list as string | undefined;
+        if (!listId) {
+          ctx.error("--list <id> is required.");
+          process.exit(1);
+        }
+
+        const config = requireConfig();
+        ctx.status("Fetching views...");
+
+        const views = await client.getListViews(config.apiToken, listId);
+
+        if (views.length === 0) {
+          ctx.empty("No custom views on this list (only the default List view exists).");
+          return;
+        }
+
+        ctx.list(
+          views.map((v) => ({
+            id: v.id,
+            name: v.name,
+            type: v.type,
+            visibility: v.visibility ?? "",
+          })),
+          ["id", "name", "type", "visibility"],
+          { resourceName: "views" },
+        );
+      },
+    },
+
+    "view create": {
+      description: "Create a view on a list, folder, or space",
+      flags: {
+        list: { type: "string", description: "List ID (one of list/folder/space is required)" },
+        folder: { type: "string", description: "Folder ID" },
+        space: { type: "string", description: "Space ID" },
+        name: { type: "string", description: "View name (required)" },
+        type: {
+          type: "string",
+          description:
+            "View type: list, board, calendar, gantt, table, timeline, workload, activity, map, conversation, doc",
+        },
+        "group-by": {
+          type: "string",
+          description: "Group-by field (e.g. status, priority, assignee, dueDate, or cf_<fieldId>)",
+        },
+        "filters-json": { type: "string", description: "Filters object as JSON" },
+        "grouping-json": { type: "string", description: "Full grouping object as JSON" },
+        "sorting-json": { type: "string", description: "Sorting object as JSON" },
+        "columns-json": { type: "string", description: "Columns object as JSON" },
+        "settings-json": { type: "string", description: "Settings object as JSON" },
+      },
+      run: async ({ flags, ctx }) => {
+        const listId = flags.list as string | undefined;
+        const folderId = flags.folder as string | undefined;
+        const spaceId = flags.space as string | undefined;
+        const name = flags.name as string | undefined;
+        const type = flags.type as string | undefined;
+
+        const parents = [listId, folderId, spaceId].filter(Boolean);
+        if (parents.length !== 1) {
+          ctx.error("Provide exactly one of --list, --folder, or --space.");
+          process.exit(1);
+        }
+        if (!name) {
+          ctx.error("--name is required.");
+          process.exit(1);
+        }
+        if (!type) {
+          ctx.error("--type is required (list, board, table, calendar, gantt, timeline, map, ...).");
+          process.exit(1);
+        }
+
+        const config = requireConfig();
+
+        const parseJson = <T>(flagName: string): T | undefined => {
+          const raw = flags[flagName] as string | undefined;
+          if (!raw) return undefined;
+          try {
+            return JSON.parse(raw) as T;
+          } catch (e) {
+            ctx.error(`--${flagName} parse failed: ${(e as Error).message}`);
+            process.exit(1);
+          }
+        };
+
+        const data: client.CreateViewData = { name, type: type as never };
+
+        const groupByField = flags["group-by"] as string | undefined;
+        const groupingJson = parseJson<client.CreateViewData["grouping"]>("grouping-json");
+        if (groupingJson) data.grouping = groupingJson;
+        else if (groupByField) data.grouping = { field: groupByField, dir: 1, collapsed: [], ignore: false };
+
+        const filtersJson = parseJson<client.CreateViewData["filters"]>("filters-json");
+        if (filtersJson) data.filters = filtersJson;
+
+        const sortingJson = parseJson<client.CreateViewData["sorting"]>("sorting-json");
+        if (sortingJson) data.sorting = sortingJson;
+
+        const columnsJson = parseJson<client.CreateViewData["columns"]>("columns-json");
+        if (columnsJson) data.columns = columnsJson;
+
+        const settingsJson = parseJson<client.CreateViewData["settings"]>("settings-json");
+        if (settingsJson) data.settings = settingsJson;
+
+        ctx.status("Creating view...");
+
+        const view = listId
+          ? await client.createListView(config.apiToken, listId, data)
+          : folderId
+          ? await client.createFolderView(config.apiToken, folderId, data)
+          : await client.createSpaceView(config.apiToken, spaceId!, data);
+
+        ctx.output({ id: view.id, name: view.name, type: view.type });
+      },
+    },
+
+    "view delete": {
+      description: "Delete a view",
+      args: {
+        viewId: { position: 0, required: true, description: "View ID" },
+      },
+      flags: {
+        yes: { type: "boolean", description: "Skip confirmation prompt" },
+      },
+      run: async ({ args, flags, ctx }) => {
+        if (!flags.yes) {
+          const answer = await prompt(`Delete view ${args.viewId}? This cannot be undone. (y/N) `);
+          if (answer.toLowerCase() !== "y") {
+            ctx.raw("Cancelled.\n");
+            return;
+          }
+        }
+
+        const config = requireConfig();
+        ctx.status("Deleting view...");
+
+        await client.deleteView(config.apiToken, args.viewId);
+
+        ctx.output({ id: args.viewId, deleted: true });
+      },
+    },
+
     hierarchy: {
       description: "Show full workspace hierarchy (spaces > folders > lists)",
       flags: {

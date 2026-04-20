@@ -4,6 +4,19 @@ Changelog-style trail of changes, decisions, and discoveries. Most recent first.
 
 ---
 
+## 2026-04-20 (evening)
+
+- Shipped CLI v0.5.0 with write commands for workspace structure. Rebased onto origin which had already shipped v0.3.0 (fields render on `task get`) and v0.4.0 (comments update/delete/ids) earlier in the day, so this release bumps straight to v0.5.0.
+- Driver: Seraph Immo ClickUp build needed to automate folder, list, custom field value operations via the CLI rather than ad-hoc scripts.
+- Added to `cli/src/client.ts`: `createFolder`, `updateFolder`, `deleteFolder`, `createListInSpace`, `createListInFolder`, `updateList`, `deleteList`, `getListCustomFields`, `setTaskCustomFieldValue`, plus a `CreateListData` interface.
+- Added to `cli/src/index.ts` commands: `folder create`, `folder update`, `folder delete`, `list create`, `list update`, `list delete`, `fields list`, `task field set`. Destructive commands (folder delete, list delete) prompt for confirmation unless `--yes` is passed.
+- Extended `task create` with `--parent` (create as subtask) and `--custom-item` (set custom task type ID). Added `--description-file` so SOP templates can be injected from a file.
+- Added `custom_item_id?: number | null` to the `CreateTaskData` type in `types/clickup-task-types.ts`, matching the task response shape and the v2 POST body.
+- ClickUp API limitation surfaced: creating custom fields and creating custom task types are not supported by v2 or v3. The CLI helps manage values and populate structure, but fields/types still need to be set up once in the UI. Documented in `cli/README.md`.
+- Next step: update submodule pointer in consuming projects (`upsys` first, the driver for this release).
+
+---
+
 ## 2026-04-17
 
 - Pulled updated ClickUp v3 OpenAPI spec. Docs/pages surface unchanged (same 5 endpoints since March 19). Found 3 gaps vs hand-written types: avatar object missing `color` and `source` fields; `TaskDocRelationship` type entirely absent; search result vs full-doc response types conflated.

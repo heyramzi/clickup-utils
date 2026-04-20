@@ -380,6 +380,84 @@ createCLI({
       },
     },
 
+    "folder create": {
+      description: "Create a folder in a space",
+      flags: {
+        space: { type: "string", description: "Space ID (required)" },
+        name: { type: "string", description: "Folder name (required)" },
+      },
+      run: async ({ flags, ctx }) => {
+        const spaceId = flags.space as string | undefined;
+        const name = flags.name as string | undefined;
+        if (!spaceId) {
+          ctx.error("--space <id> is required.");
+          process.exit(1);
+        }
+        if (!name) {
+          ctx.error("--name is required.");
+          process.exit(1);
+        }
+
+        const config = requireConfig();
+        ctx.status("Creating folder...");
+
+        const folder = await client.createFolder(config.apiToken, spaceId, name);
+
+        ctx.output({ id: folder.id, name: folder.name });
+        ctx.next([`list create --folder ${folder.id} --name <name>`, `folders --space ${spaceId}`]);
+      },
+    },
+
+    "folder update": {
+      description: "Rename an existing folder",
+      args: {
+        folderId: { position: 0, required: true, description: "Folder ID" },
+      },
+      flags: {
+        name: { type: "string", description: "New folder name (required)" },
+      },
+      run: async ({ args, flags, ctx }) => {
+        const name = flags.name as string | undefined;
+        if (!name) {
+          ctx.error("--name is required.");
+          process.exit(1);
+        }
+
+        const config = requireConfig();
+        ctx.status("Updating folder...");
+
+        const folder = await client.updateFolder(config.apiToken, args.folderId, { name });
+
+        ctx.output({ id: folder.id, name: folder.name });
+      },
+    },
+
+    "folder delete": {
+      description: "Delete a folder (and all lists inside)",
+      args: {
+        folderId: { position: 0, required: true, description: "Folder ID" },
+      },
+      flags: {
+        yes: { type: "boolean", description: "Skip confirmation prompt" },
+      },
+      run: async ({ args, flags, ctx }) => {
+        if (!flags.yes) {
+          const answer = await prompt(`Delete folder ${args.folderId} and all its lists? This cannot be undone. (y/N) `);
+          if (answer.toLowerCase() !== "y") {
+            ctx.raw("Cancelled.\n");
+            return;
+          }
+        }
+
+        const config = requireConfig();
+        ctx.status("Deleting folder...");
+
+        await client.deleteFolder(config.apiToken, args.folderId);
+
+        ctx.output({ id: args.folderId, deleted: true });
+      },
+    },
+
     lists: {
       description: "List lists in a space or folder",
       flags: {
@@ -425,6 +503,113 @@ createCLI({
         );
 
         ctx.next(["tasks --list <id>"]);
+      },
+    },
+
+    "list create": {
+      description: "Create a list in a space or folder",
+      flags: {
+        space: { type: "string", description: "Space ID (folderless list)" },
+        folder: { type: "string", description: "Folder ID (list inside folder)" },
+        name: { type: "string", description: "List name (required)" },
+        content: { type: "string", description: "List description" },
+        priority: { type: "string", description: "Priority: urgent, high, normal, low" },
+        status: { type: "string", description: "Default task status" },
+      },
+      run: async ({ flags, ctx }) => {
+        const spaceId = flags.space as string | undefined;
+        const folderId = flags.folder as string | undefined;
+        const name = flags.name as string | undefined;
+
+        if (!spaceId && !folderId) {
+          ctx.error("Provide --space <id> or --folder <id>.");
+          process.exit(1);
+        }
+        if (spaceId && folderId) {
+          ctx.error("Use --space OR --folder, not both.");
+          process.exit(1);
+        }
+        if (!name) {
+          ctx.error("--name is required.");
+          process.exit(1);
+        }
+
+        const config = requireConfig();
+        ctx.status("Creating list...");
+
+        const priorityMap: Record<string, 1 | 2 | 3 | 4> = { urgent: 1, high: 2, normal: 3, low: 4 };
+        const data: client.CreateListData = { name };
+        if (flags.content) data.content = flags.content as string;
+        const priorityStr = flags.priority as string | undefined;
+        if (priorityStr && priorityMap[priorityStr]) data.priority = priorityMap[priorityStr];
+        if (flags.status) data.status = flags.status as string;
+
+        const list = folderId
+          ? await client.createListInFolder(config.apiToken, folderId, data)
+          : await client.createListInSpace(config.apiToken, spaceId!, data);
+
+        ctx.output({ id: list.id, name: list.name });
+        ctx.next([`tasks --list ${list.id}`, `task create --list ${list.id} --name <name>`]);
+      },
+    },
+
+    "list update": {
+      description: "Update a list (name, content, status, priority)",
+      args: {
+        listId: { position: 0, required: true, description: "List ID" },
+      },
+      flags: {
+        name: { type: "string", description: "New list name" },
+        content: { type: "string", description: "New description" },
+        priority: { type: "string", description: "Priority: urgent, high, normal, low" },
+        status: { type: "string", description: "Default status" },
+      },
+      run: async ({ args, flags, ctx }) => {
+        const config = requireConfig();
+        const priorityMap: Record<string, 1 | 2 | 3 | 4> = { urgent: 1, high: 2, normal: 3, low: 4 };
+        const data: Partial<client.CreateListData> = {};
+
+        if (flags.name) data.name = flags.name as string;
+        if (flags.content) data.content = flags.content as string;
+        const priorityStr = flags.priority as string | undefined;
+        if (priorityStr && priorityMap[priorityStr]) data.priority = priorityMap[priorityStr];
+        if (flags.status) data.status = flags.status as string;
+
+        if (Object.keys(data).length === 0) {
+          ctx.error("No update fields provided. Use --name, --content, --priority, or --status.");
+          process.exit(1);
+        }
+
+        ctx.status("Updating list...");
+        const list = await client.updateList(config.apiToken, args.listId, data);
+
+        ctx.output({ id: list.id, name: list.name });
+      },
+    },
+
+    "list delete": {
+      description: "Delete a list (and all tasks inside)",
+      args: {
+        listId: { position: 0, required: true, description: "List ID" },
+      },
+      flags: {
+        yes: { type: "boolean", description: "Skip confirmation prompt" },
+      },
+      run: async ({ args, flags, ctx }) => {
+        if (!flags.yes) {
+          const answer = await prompt(`Delete list ${args.listId} and all its tasks? This cannot be undone. (y/N) `);
+          if (answer.toLowerCase() !== "y") {
+            ctx.raw("Cancelled.\n");
+            return;
+          }
+        }
+
+        const config = requireConfig();
+        ctx.status("Deleting list...");
+
+        await client.deleteList(config.apiToken, args.listId);
+
+        ctx.output({ id: args.listId, deleted: true });
       },
     },
 
@@ -607,11 +792,14 @@ createCLI({
         list: { type: "string", description: "List ID to create task in (required)" },
         name: { type: "string", description: "Task name (required)" },
         description: { type: "string", description: "Task description" },
+        "description-file": { type: "string", description: "Read description from a file" },
         markdown: { type: "boolean", description: "Treat description as markdown" },
         status: { type: "string", description: "Task status" },
         priority: { type: "string", description: "Priority: urgent, high, normal, low" },
         assignee: { type: "string", description: "Assignee user IDs (comma-separated)" },
         tag: { type: "string", description: "Tag names (comma-separated)" },
+        parent: { type: "string", description: "Parent task ID (creates a subtask)" },
+        "custom-item": { type: "string", description: "Custom task type ID (0=task, 1=milestone, plural from `custom_item`)" },
       },
       run: async ({ flags, ctx }) => {
         const listId = flags.list as string | undefined;
@@ -632,10 +820,14 @@ createCLI({
         const priorityMap: Record<string, number> = { urgent: 1, high: 2, normal: 3, low: 4 };
         const data: Record<string, unknown> = { name };
 
-        if (flags.description) {
+        let descriptionValue = flags.description as string | undefined;
+        const descriptionFile = flags["description-file"] as string | undefined;
+        if (descriptionFile) descriptionValue = readFileSync(descriptionFile, "utf8");
+        if (descriptionValue !== undefined) {
           const key = flags.markdown ? "markdown_description" : "description";
-          data[key] = flags.description;
+          data[key] = descriptionValue;
         }
+
         if (flags.status) data.status = flags.status;
         const priorityStr = flags.priority as string | undefined;
         if (priorityStr && priorityMap[priorityStr]) {
@@ -645,6 +837,9 @@ createCLI({
         if (assigneeStr) data.assignees = assigneeStr.split(",").map(Number);
         const tagStr = flags.tag as string | undefined;
         if (tagStr) data.tags = tagStr.split(",");
+        if (flags.parent) data.parent = flags.parent as string;
+        const customItem = flags["custom-item"] as string | undefined;
+        if (customItem !== undefined) data.custom_item_id = Number(customItem);
 
         const task = await client.createTask(
           config.apiToken,
@@ -743,6 +938,95 @@ createCLI({
           ["id", "username", "email", "role"],
           { resourceName: "members" },
         );
+      },
+    },
+
+    // ── Custom Fields ─────────────────────────────────
+
+    "fields list": {
+      description: "List custom fields on a list",
+      flags: {
+        list: { type: "string", description: "List ID (required)" },
+      },
+      run: async ({ flags, ctx }) => {
+        const listId = flags.list as string | undefined;
+        if (!listId) {
+          ctx.error("--list <id> is required.");
+          process.exit(1);
+        }
+
+        const config = requireConfig();
+        ctx.status("Fetching custom fields...");
+
+        const fields = await client.getListCustomFields(config.apiToken, listId);
+
+        if (fields.length === 0) {
+          ctx.empty("No custom fields on this list. Fields must be created in the ClickUp UI (the API does not support field creation).");
+          return;
+        }
+
+        ctx.list(
+          fields.map((f) => ({
+            id: f.id,
+            name: f.name,
+            type: f.type,
+            options:
+              f.type === "drop_down" || f.type === "labels"
+                ? ((f.type_config as { options?: Array<{ id: string; name?: string; label?: string }> }).options ?? [])
+                    .map((o) => o.name ?? o.label ?? o.id)
+                    .join(" | ")
+                : "",
+          })),
+          ["id", "name", "type", "options"],
+          { resourceName: "fields" },
+        );
+
+        ctx.next([
+          `task field set <taskId> --field <fieldId> --value <value>`,
+        ]);
+      },
+    },
+
+    "task field set": {
+      description: "Set a custom field value on a task",
+      args: {
+        taskId: { position: 0, required: true, description: "Task ID" },
+      },
+      flags: {
+        field: { type: "string", description: "Custom field ID (required)" },
+        value: { type: "string", description: "Field value (required). For dropdowns, pass the option ID or index" },
+        "json-value": { type: "boolean", description: "Parse --value as JSON (for complex values)" },
+      },
+      run: async ({ args, flags, ctx }) => {
+        const fieldId = flags.field as string | undefined;
+        const raw = flags.value as string | undefined;
+        if (!fieldId) {
+          ctx.error("--field <id> is required.");
+          process.exit(1);
+        }
+        if (raw === undefined) {
+          ctx.error("--value is required.");
+          process.exit(1);
+        }
+
+        let value: unknown = raw;
+        if (flags["json-value"]) {
+          try {
+            value = JSON.parse(raw);
+          } catch (e) {
+            ctx.error(`--json-value parse failed: ${(e as Error).message}`);
+            process.exit(1);
+          }
+        } else if (/^-?\d+(\.\d+)?$/.test(raw)) {
+          value = Number(raw);
+        }
+
+        const config = requireConfig();
+        ctx.status("Setting custom field value...");
+
+        await client.setTaskCustomFieldValue(config.apiToken, args.taskId, fieldId, value);
+
+        ctx.output({ taskId: args.taskId, fieldId, value });
       },
     },
 

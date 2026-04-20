@@ -20,6 +20,10 @@ import type {
   ClickUpPage,
 } from "../../types/clickup-doc-types.js";
 import type {
+  ClickUpCustomField,
+  ClickUpCustomFieldResponse,
+} from "../../types/clickup-field-types.js";
+import type {
   ClickUpFolder,
   ClickUpList,
   ClickUpSpace,
@@ -171,6 +175,32 @@ export async function getFolders(token: string, spaceId: string): Promise<ClickU
   return res.folders;
 }
 
+export async function createFolder(
+  token: string,
+  spaceId: string,
+  name: string,
+): Promise<ClickUpFolder> {
+  return request<ClickUpFolder>(`/space/${spaceId}/folder`, token, {
+    method: "POST",
+    body: { name },
+  });
+}
+
+export async function updateFolder(
+  token: string,
+  folderId: string,
+  data: { name?: string },
+): Promise<ClickUpFolder> {
+  return request<ClickUpFolder>(`/folder/${folderId}`, token, {
+    method: "PUT",
+    body: data,
+  });
+}
+
+export async function deleteFolder(token: string, folderId: string): Promise<void> {
+  await request<void>(`/folder/${folderId}`, token, { method: "DELETE" });
+}
+
 // ── Lists ────────────────────────────────────────────
 
 export async function getFolderlessLists(token: string, spaceId: string): Promise<ClickUpList[]> {
@@ -189,6 +219,75 @@ export async function getListsInFolder(token: string, folderId: string): Promise
 
 export async function getList(token: string, listId: string): Promise<ClickUpList> {
   return request<ClickUpList>(`/list/${listId}`, token);
+}
+
+export interface CreateListData {
+  name: string;
+  content?: string;
+  due_date?: number;
+  due_date_time?: boolean;
+  priority?: 1 | 2 | 3 | 4;
+  assignee?: number;
+  status?: string;
+}
+
+export async function createListInSpace(
+  token: string,
+  spaceId: string,
+  data: CreateListData,
+): Promise<ClickUpList> {
+  return request<ClickUpList>(`/space/${spaceId}/list`, token, {
+    method: "POST",
+    body: data,
+  });
+}
+
+export async function createListInFolder(
+  token: string,
+  folderId: string,
+  data: CreateListData,
+): Promise<ClickUpList> {
+  return request<ClickUpList>(`/folder/${folderId}/list`, token, {
+    method: "POST",
+    body: data,
+  });
+}
+
+export async function updateList(
+  token: string,
+  listId: string,
+  data: Partial<CreateListData> & { unset_status?: boolean },
+): Promise<ClickUpList> {
+  return request<ClickUpList>(`/list/${listId}`, token, {
+    method: "PUT",
+    body: data,
+  });
+}
+
+export async function deleteList(token: string, listId: string): Promise<void> {
+  await request<void>(`/list/${listId}`, token, { method: "DELETE" });
+}
+
+// ── Custom Fields ────────────────────────────────────
+
+export async function getListCustomFields(
+  token: string,
+  listId: string,
+): Promise<ClickUpCustomField[]> {
+  const res = await request<ClickUpCustomFieldResponse>(`/list/${listId}/field`, token);
+  return res.fields;
+}
+
+export async function setTaskCustomFieldValue(
+  token: string,
+  taskId: string,
+  fieldId: string,
+  value: unknown,
+): Promise<void> {
+  await request<void>(`/task/${taskId}/field/${fieldId}`, token, {
+    method: "POST",
+    body: { value },
+  });
 }
 
 // ── Tasks ────────────────────────────────────────────

@@ -340,6 +340,7 @@ export interface CreateTaskData {
   start_date?: number;
   time_estimate?: number;
   parent?: string;
+  custom_item_id?: number | null;
   custom_fields?: Array<{
     id: string;
     value: unknown;

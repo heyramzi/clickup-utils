@@ -46,6 +46,20 @@ cu <command> [args...]
 | `clickup hierarchy`            | Full tree view: spaces > folders > lists       |
 | `clickup members`              | List team members                              |
 
+### Structure (write)
+
+| Command                                                  | Description                                  |
+| -------------------------------------------------------- | -------------------------------------------- |
+| `clickup folder create --space <id> --name "..."`        | Create a folder in a space                   |
+| `clickup folder update <folderId> --name "..."`          | Rename a folder                              |
+| `clickup folder delete <folderId>`                       | Delete a folder (and all its lists)          |
+| `clickup list create --space <id> --name "..."`          | Create a folderless list in a space          |
+| `clickup list create --folder <id> --name "..."`         | Create a list inside a folder                |
+| `clickup list update <listId> --name "..."`              | Update name, content, priority, or status    |
+| `clickup list delete <listId>`                           | Delete a list (and all tasks)                |
+
+List create/update flags: `--content "..."`, `--priority urgent|high|normal|low`, `--status <default>`.
+
 ### Tasks
 
 | Command                                        | Description                          |
@@ -61,7 +75,20 @@ cu <command> [args...]
 
 Task filters: `--assignee <ids>`, `--status <names>`, `--closed`, `--subtasks`, `--page <n>`
 
+Task create flags: `--name`, `--description "..."` or `--description-file <path>` with `--markdown`, `--status`, `--priority`, `--assignee <ids>`, `--tag <names>`, `--parent <taskId>` (subtask), `--custom-item <id>` (custom task type).
+
 Task update flags: `--name`, `--status`, `--priority`, `--add-assignee <ids>`, `--remove-assignee <ids>`
+
+### Custom Fields
+
+| Command                                                              | Description                                    |
+| -------------------------------------------------------------------- | ---------------------------------------------- |
+| `clickup fields list --list <id>`                                    | List custom fields on a list (with option IDs) |
+| `clickup task field set <taskId> --field <fieldId> --value <v>`      | Set a custom field value on a task             |
+
+Use `--json-value` on `task field set` when the value is a complex object (relationship, user field, etc.).
+
+**ClickUp API limitation**: custom fields and custom task types cannot be created via API. Configure them once in the ClickUp UI, then use the CLI to populate values.
 
 ### Docs
 

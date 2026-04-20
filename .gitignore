@@ -6,6 +6,8 @@ generated/
 
 # Environment variables
 .env
+.env.local
+.env.*.local
 
 # CLI build artifacts and dependencies
 cli/node_modules/

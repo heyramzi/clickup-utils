@@ -21,9 +21,10 @@ Write commands for workspace structure.
 - `folder create/update/delete`
 - `list create/update/delete`
 - `fields list`
+- `fields create`
 - `task field set`
 - `task create` gains `--parent` (subtask), `--custom-item` (task type), `--description-file` (SOP templates from file)
-- ClickUp API does not expose creation of custom fields or custom task types; both still require one-time UI setup (documented in README)
+- ClickUp API exposes custom field creation on lists and workspaces; custom task types still require one-time UI setup (documented in README)
 - Driver: Seraph Immo workspace build (ramzi)
 
 ---

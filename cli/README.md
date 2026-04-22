@@ -82,7 +82,7 @@ Task update flags: `--name`, `--status`, `--priority`, `--add-assignee <ids>`, `
 | --------------------------------------------------------------- | ---------------------------------------------- |
 | `clickup fields list --list <id>`                               | List custom fields on a list (with option IDs) |
 | `clickup fields create --team <id> --name ... --type ...`       | Create a custom field at workspace level       |
-| `clickup fields create --list <id> --name ... --type ...`       | Create a custom field on a list                 |
+| `clickup fields create --list <id> --name ... --type ...`       | Create a custom field on a list                |
 | `clickup task field set <taskId> --field <fieldId> --value <v>` | Set a custom field value on a task             |
 
 Use `--json-value` on `task field set` when the value is a complex object (relationship, user field, etc.).

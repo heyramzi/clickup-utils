@@ -42,7 +42,7 @@ export async function exchangeCodeForToken(params: OAuthTokenExchangeParams): Pr
     throw new Error(`ClickUp OAuth token exchange failed: ${errorText}`);
   }
 
-  const data: ClickUpTokenResponse = await response.json();
+  const data = (await response.json()) as ClickUpTokenResponse;
   return data.access_token;
 }
 

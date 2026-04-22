@@ -112,6 +112,43 @@ function parseBooleanFlag(value: unknown): boolean | undefined {
   return undefined;
 }
 
+function normalizeCustomFieldOptions(
+  type: string,
+  raw: unknown,
+): client.CreateCustomFieldOptionInput[] | null {
+  if (!Array.isArray(raw)) return null;
+
+  return raw.map((option, index) => {
+    if (typeof option === "string") {
+      return type === "labels"
+        ? { label: option, orderindex: index }
+        : { name: option, orderindex: index };
+    }
+
+    if (!option || typeof option !== "object") {
+      throw new Error("Each option must be either a string or an object.");
+    }
+
+    const candidate = option as client.CreateCustomFieldOptionInput;
+    const normalized =
+      type === "labels"
+        ? { ...candidate, label: candidate.label ?? candidate.name }
+        : { ...candidate, name: candidate.name ?? candidate.label };
+
+    if (type === "labels" && !normalized.label) {
+      throw new Error("Each labels option must include `label` or `name`.");
+    }
+    if (type !== "labels" && !normalized.name) {
+      throw new Error("Each option must include `name` or `label`.");
+    }
+
+    return {
+      ...normalized,
+      orderindex: normalized.orderindex ?? index,
+    };
+  });
+}
+
 function applyTaskDate(
   data: Record<string, unknown>,
   value: string | undefined,
@@ -1374,6 +1411,18 @@ createCLI({
           type: "string",
           description: "JSON array of dropdown/labels options",
         },
+        "currency-type": {
+          type: "string",
+          description: "Currency code for currency fields, e.g. USD, EUR, GBP",
+        },
+        "emoji-code-point": {
+          type: "string",
+          description: "Unicode emoji code point for emoji fields, e.g. 1F525",
+        },
+        "emoji-count": {
+          type: "string",
+          description: "Maximum emoji rating value for emoji fields, from 1 to 5",
+        },
         sorting: {
           type: "string",
           description: "Option sorting: manual, name_asc, or name_desc",
@@ -1426,16 +1475,34 @@ createCLI({
           typeConfig.default = parsedDefault;
         }
         if (flags.placeholder) typeConfig.placeholder = String(flags.placeholder);
+        if (flags["currency-type"]) {
+          typeConfig.currency_type = String(flags["currency-type"]).toUpperCase();
+        }
+        if (flags["emoji-code-point"]) {
+          typeConfig.code_point = String(flags["emoji-code-point"])
+            .replace(/^U\+/i, "")
+            .toUpperCase();
+        }
+        if (type === "emoji") {
+          const rawCount = flags["emoji-count"] ?? "5";
+          const parsedCount = Number(rawCount);
+          if (!Number.isInteger(parsedCount) || parsedCount < 1 || parsedCount > 5) {
+            ctx.error("--emoji-count must be an integer between 1 and 5.");
+            process.exit(1);
+          }
+          typeConfig.count = parsedCount;
+        }
 
         const optionsRaw = flags["options-json"] as string | undefined;
         if (optionsRaw) {
           try {
             const options = JSON.parse(optionsRaw);
-            if (!Array.isArray(options)) {
+            const normalizedOptions = normalizeCustomFieldOptions(type, options);
+            if (!normalizedOptions) {
               ctx.error("--options-json must be a JSON array.");
               process.exit(1);
             }
-            typeConfig.options = options;
+            typeConfig.options = normalizedOptions;
           } catch (e) {
             ctx.error(`--options-json parse failed: ${(e as Error).message}`);
             process.exit(1);

@@ -257,6 +257,9 @@ export interface CreateCustomFieldData {
     sorting?: string;
     default?: number;
     placeholder?: string;
+    currency_type?: string;
+    code_point?: string;
+    count?: number;
     options?: CreateCustomFieldOptionInput[];
     [key: string]: unknown;
   };

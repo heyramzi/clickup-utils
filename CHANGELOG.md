@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.0.0](https://github.com/heyramzi/clickup-utils/compare/clickup-utils-v1.0.0...clickup-utils-v2.0.0) (2026-04-27)
+
+
+### ⚠ BREAKING CHANGES
+
+* **cli:** package renamed from @clickup-utils/cli to @heyramzi/clickup-cli. Reinstall via:   pnpm i -g @heyramzi/clickup-cli
+
+### Features
+
+* **cli:** rename to @heyramzi/clickup-cli ([eaa6eef](https://github.com/heyramzi/clickup-utils/commit/eaa6eeff92bf2cf64aa8e859513bbda580e60d6d))
+
+
+### Bug Fixes
+
+* **ci:** trigger publish on release published, not tag push ([3cf1a16](https://github.com/heyramzi/clickup-utils/commit/3cf1a16edec60411b538c988dab93e63a42e93f8))
+
 ## [1.0.0](https://github.com/heyramzi/clickup-utils/compare/clickup-utils-v0.1.0...clickup-utils-v1.0.0) (2026-04-27)
 
 

@@ -3,6 +3,12 @@ name: publish
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to publish (e.g. clickup-utils-v1.0.0 or cli-v0.8.0)"
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -10,12 +16,14 @@ permissions:
 
 jobs:
   publish-lib:
-    if: startsWith(github.event.release.tag_name, 'clickup-utils-v')
+    if: |
+      (github.event_name == 'release' && startsWith(github.event.release.tag_name, 'clickup-utils-v')) ||
+      (github.event_name == 'workflow_dispatch' && startsWith(inputs.tag, 'clickup-utils-v'))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.tag_name }}
+          ref: ${{ github.event.release.tag_name || inputs.tag }}
       - uses: pnpm/action-setup@v4
         with:
           version: 10
@@ -31,12 +39,14 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   publish-cli:
-    if: startsWith(github.event.release.tag_name, 'cli-v')
+    if: |
+      (github.event_name == 'release' && startsWith(github.event.release.tag_name, 'cli-v')) ||
+      (github.event_name == 'workflow_dispatch' && startsWith(inputs.tag, 'cli-v'))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.tag_name }}
+          ref: ${{ github.event.release.tag_name || inputs.tag }}
       - uses: pnpm/action-setup@v4
         with:
           version: 10

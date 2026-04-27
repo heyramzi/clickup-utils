@@ -7,7 +7,7 @@ Guidelines to reduce common LLM coding mistakes. Bias toward caution; use judgme
 Don't assume. Surface tradeoffs.
 
 - State assumptions explicitly. Ask if uncertain.
-- Present multiple interpretations — don't pick silently.
+- Present multiple interpretations, don't pick silently.
 - Suggest simpler approaches. Push back when warranted.
 - If unclear, stop and ask.
 
@@ -19,7 +19,7 @@ Minimum code that solves the problem. Nothing speculative.
 - No abstractions for single-use code.
 - No unrequested "flexibility."
 - No error handling for impossible scenarios.
-- 200 lines that could be 50 → rewrite.
+- 200 lines that could be 50, rewrite.
 
 ## 3. Surgical Changes
 
@@ -37,112 +37,100 @@ Every changed line should trace directly to the user's request.
 
 Define success criteria. Loop until verified.
 
-- "Add validation" → "Write tests for invalid inputs, then make them pass"
-- "Fix the bug" → "Write a test that reproduces it, then make it pass"
-- "Refactor X" → "Ensure tests pass before and after"
+- "Add validation" -> "Write tests for invalid inputs, then make them pass"
+- "Fix the bug" -> "Write a test that reproduces it, then make it pass"
+- "Refactor X" -> "Ensure tests pass before and after"
 
 For multi-step tasks, state a brief plan with verification checks.
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
 
-These guidelines work when: fewer unnecessary changes, fewer rewrites, and questions come before mistakes.
-
 ## Project Overview
 
-**clickup-utils** is a pure TypeScript library for ClickUp API integration, distributed as a **git submodule** across 6+ projects. It has zero runtime dependencies for core functionality and provides:
+**clickup-utils** is a pure TypeScript library for ClickUp API integration, published to GitHub Packages as `@heyramzi/clickup-utils`. The repo also ships `@clickup-utils/cli` (in `cli/`), a terminal CLI that consumes the library directly.
 
-- Hand-written types for ClickUp API v2 & v3
-- Auto-generated SDK from OpenAPI specs (types + API client for every endpoint)
-- Framework-agnostic OAuth, hierarchy API, and transformers
-- Framework-specific integrations (SvelteKit + Supabase, Next.js placeholder)
+Both packages are released via release-please on push to `main`.
 
 ## Architecture
 
-The codebase follows a layered architecture where each layer depends only on the layers below it:
+```
++-----------------------------------------+
+|  Transformers (transformers/)           |  Pure functions, API -> storage format
++-----------------------------------------+
+|  API Functions (api/)                   |  Pure fetch, uses types
++-----------------------------------------+
+|  Core (core/)                           |  Framework-agnostic (OAuth protocol)
++-----------------------------------------+
+|  Types (types/)                         |  Zero-dependency type definitions
++-----------------------------------------+
+```
 
-```
-┌─────────────────────────────────────────┐
-│  Framework Integrations (sveltekit/, nextjs/)  │  ← Framework-specific, import from core
-├─────────────────────────────────────────┤
-│  Transformers (transformers/)           │  ← Pure functions, API → storage format
-├─────────────────────────────────────────┤
-│  API Functions (api/)                   │  ← Pure fetch, uses types
-├─────────────────────────────────────────┤
-│  Core (core/)                           │  ← Framework-agnostic (OAuth protocol)
-├─────────────────────────────────────────┤
-│  Types (types/)                         │  ← Zero-dependency type definitions
-├─────────────────────────────────────────┤
-│  Generated SDK (generated/)             │  ← Auto-generated, gitignored
-└─────────────────────────────────────────┘
-```
+The CLI (`cli/`) sits on top of all of these and ships as its own package.
 
 **Key design decisions:**
 
-- **No package.json** — this is not an npm package, it's consumed as a submodule
-- **No build step** — consuming projects import TypeScript directly
-- **`generated/` is gitignored** — re-generate with `node scripts/generate-sdk/index.mjs`
-- **Hand-written types coexist with generated types** — hand-written are battle-tested and richer; generated provide full API coverage
+- Library has no runtime dependencies. Type-only at the boundary.
+- Build is `tsc` to `dist/`. ESM, NodeNext-compatible. Relative imports must end in `.js` so the emitted output resolves.
+- CLI builds to `cli/dist/` and ships compiled JS, not TS.
 
 ## Commands
 
 ```bash
-# Re-generate SDK from ClickUp OpenAPI specs (downloads specs, generates types + API client)
-node scripts/generate-sdk/index.mjs
+# From repo root: build the library
+pnpm install
+pnpm run build
 
-# Type-check (run from consuming project, since this has no tsconfig)
-# This project has no package.json or tsconfig — type checking happens in consumer projects
+# From cli/: build the CLI
+cd cli && pnpm install && pnpm run build
+
+# Type-check only (no emit)
+pnpm exec tsc -p tsconfig.build.json --noEmit
+cd cli && pnpm exec tsc --noEmit
 ```
 
 ## Directory Map
 
-| Directory               | Purpose                                                        | Edit?                         |
-| ----------------------- | -------------------------------------------------------------- | ----------------------------- |
-| `types/`                | Hand-written ClickUp API types (11 files)                      | Yes — primary source of truth |
-| `core/`                 | OAuth protocol (pure functions, zero deps)                     | Yes                           |
-| `api/`                  | Hierarchy fetch functions (workspaces, spaces, folders, lists) | Yes                           |
-| `transformers/`         | API response → StoredWorkspace/List/etc.                       | Yes                           |
-| `sveltekit/`            | OAuth callback handler + Supabase token storage                | Yes                           |
-| `nextjs/`               | OAuth callback handler (token storage TBD)                     | Yes                           |
-| `generated/`            | Auto-generated from OpenAPI specs                              | **No** — re-run generator     |
-| `scripts/generate-sdk/` | OpenAPI → TypeScript generator pipeline                        | Yes                           |
-| `index.ts`              | Barrel export (types, core, transformers, API)                 | Yes                           |
+| Directory       | Purpose                                                       | Edit? |
+| --------------- | ------------------------------------------------------------- | ----- |
+| `types/`        | Hand-written ClickUp API types                                | Yes   |
+| `core/`         | OAuth protocol (pure functions, zero deps)                    | Yes   |
+| `api/`          | Hierarchy fetch functions (workspaces, spaces, folders, lists)| Yes   |
+| `transformers/` | API response -> StoredWorkspace/List/etc.                     | Yes   |
+| `cli/`          | `@clickup-utils/cli` source. Separate package, separate build | Yes   |
+| `index.ts`      | Library barrel export                                         | Yes   |
+| `dist/`         | Build output (gitignored)                                     | No    |
 
 ## Consuming Projects
 
-This submodule is used in:
+Consumed via GitHub Packages by:
 
-- **save-to-clickup** → `src/types/clickup-utils`
-- **clickup-to-blog** → `src/types/clickup-utils`
-- **client-glance** → `src/lib/types/clickup-utils`
-- **upsys-app** → `src/types/clickup-utils`
-- **upsys-consulting** → `types/clickup-utils`
-- **clickup-to-sheets** → `src/types/clickup-utils`
+- **save-to-clickup**
+- **clickup-to-blog**
+- **client-glance**
+- **clickup-to-sheets**
 
-Changes here affect all of them — test accordingly.
+Changes here affect all of them. Bump the dep in each consumer after a release.
 
 ## Conventions
 
-- Pure functions, zero side effects in core/api/transformers
-- Types reflect actual ClickUp API responses (no invented abstractions)
-- Framework-specific code stays in its framework folder
-- `Stored*` types (StoredWorkspace, StoredList, etc.) are the simplified format for UI/storage
-- OAuth functions accept explicit params (no global state or singletons)
+- Pure functions, zero side effects in core/api/transformers.
+- Types reflect actual ClickUp API responses (no invented abstractions).
+- `Stored*` types (StoredWorkspace, StoredList, etc.) are the simplified format for UI/storage.
+- OAuth functions accept explicit params (no global state or singletons).
+- Relative imports in `.ts` files always end in `.js` (NodeNext ESM resolution).
+- Conventional Commits: `fix:` for patch, `feat:` for minor, `feat!:` or `BREAKING CHANGE:` for major. release-please reads these.
 
-## SDK Generator Pipeline
+## Releasing
 
-`scripts/generate-sdk/` runs as a Node.js pipeline (zero npm deps):
+release-please runs on push to `main`:
 
-1. **download-specs.mjs** — Fetches v2 + v3 OpenAPI specs, caches in `.claude/specs/`
-2. **parse-schemas.mjs** — Resolves `$ref`s, groups endpoints by tag, normalizes
-3. **generate-types.mjs** — Emits `generated/types/{group}.ts` (interfaces + type aliases)
-4. **generate-api-client.mjs** — Emits `generated/api/{group}.api.ts` (typed fetch functions)
-5. **generate-barrel.mjs** — Emits barrel `index.ts` files
-
-The generator detects dynamic maps, handles circular refs, unifies response types across status codes, and supports multipart uploads.
+1. It opens (or updates) a release PR for each package with the next version and changelog.
+2. Merging that PR tags and publishes via the publish workflow.
+3. Both packages release independently. The library is `@heyramzi/clickup-utils`, the CLI is `@clickup-utils/cli`.
 
 ## Workflow
 
-- Read `AGENTS.md` first (it links to this file).
+- Read `AGENTS.md` first.
 - Keep changes focused and minimal.
-- Run relevant checks before finishing.
+- Run `pnpm run build` (and `cd cli && pnpm run build`) before finishing.
 - Stage only intended files.

@@ -8,17 +8,17 @@
     "url": "git+https://github.com/heyramzi/clickup-utils.git",
     "directory": "cli"
   },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com",
-    "access": "restricted"
+  "bin": {
+    "clickup": "./dist/clickup.js",
+    "cu": "./dist/clickup.js"
   },
   "files": [
     "dist",
     "README.md"
   ],
-  "bin": {
-    "clickup": "./dist/clickup.js",
-    "cu": "./dist/clickup.js"
+  "publishConfig": {
+    "access": "restricted",
+    "registry": "https://npm.pkg.github.com"
   },
   "scripts": {
     "clean": "rm -rf dist",

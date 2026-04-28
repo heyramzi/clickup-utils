@@ -90,15 +90,15 @@ cd cli && pnpm exec tsc --noEmit
 
 ## Directory Map
 
-| Directory       | Purpose                                                       | Edit? |
-| --------------- | ------------------------------------------------------------- | ----- |
-| `types/`        | Hand-written ClickUp API types                                | Yes   |
-| `core/`         | OAuth protocol (pure functions, zero deps)                    | Yes   |
-| `api/`          | Hierarchy fetch functions (workspaces, spaces, folders, lists)| Yes   |
-| `transformers/` | API response -> StoredWorkspace/List/etc.                     | Yes   |
+| Directory       | Purpose                                                          | Edit? |
+| --------------- | ---------------------------------------------------------------- | ----- |
+| `types/`        | Hand-written ClickUp API types                                   | Yes   |
+| `core/`         | OAuth protocol (pure functions, zero deps)                       | Yes   |
+| `api/`          | Hierarchy fetch functions (workspaces, spaces, folders, lists)   | Yes   |
+| `transformers/` | API response -> StoredWorkspace/List/etc.                        | Yes   |
 | `cli/`          | `@heyramzi/clickup-cli` source. Separate package, separate build | Yes   |
-| `index.ts`      | Library barrel export                                         | Yes   |
-| `dist/`         | Build output (gitignored)                                     | No    |
+| `index.ts`      | Library barrel export                                            | Yes   |
+| `dist/`         | Build output (gitignored)                                        | No    |
 
 ## Consuming Projects
 

@@ -18,18 +18,6 @@
     "forceConsistentCasingInFileNames": true,
     "allowSyntheticDefaultImports": true
   },
-  "include": [
-    "index.ts",
-    "types/**/*.ts",
-    "core/**/*.ts",
-    "api/**/*.ts",
-    "transformers/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "cli",
-    ".claude",
-    "**/*.test.ts"
-  ]
+  "include": ["index.ts", "types/**/*.ts", "core/**/*.ts", "api/**/*.ts", "transformers/**/*.ts"],
+  "exclude": ["node_modules", "dist", "cli", ".claude", "**/*.test.ts"]
 }

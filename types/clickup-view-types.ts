@@ -11,10 +11,13 @@ export type ViewType =
   | "table"
   | "timeline"
   | "workload"
+  | "mind_map"
   | "activity"
   | "map"
   | "conversation"
-  | "doc";
+  | "doc"
+  | "embed"
+  | "form";
 
 // Core view interface
 export interface ClickUpView {
@@ -26,9 +29,11 @@ export interface ClickUpView {
     type: number;
   };
   grouping?: {
-    field: string;
+    field: string | null;
     dir: number;
-    hide_empty: boolean;
+    hide_empty?: boolean;
+    collapsed?: string[];
+    ignore?: boolean;
   };
   divide?: {
     field: string | null;

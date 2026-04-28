@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.1.0](https://github.com/heyramzi/clickup-utils/compare/clickup-utils-v2.0.0...clickup-utils-v2.1.0) (2026-04-28)
+
+### Features
+
+- add normalizeTaskDescription for clean markdown across task shapes ([2f5ed0c](https://github.com/heyramzi/clickup-utils/commit/2f5ed0c96a7dc3ed046dd46c1dd1d62e58570653))
+- expand ClickUp view typings for additional view types, grouping options, and test coverage ([b10ef24](https://github.com/heyramzi/clickup-utils/commit/b10ef24))
+- type space feature payloads and add getSpace ([7a30268](https://github.com/heyramzi/clickup-utils/commit/7a3026848fb442392510be8c7f370f81f2c2a6d5))
+
+### Bug Fixes
+
+- add idx to ClickUp view column fields ([61e8575](https://github.com/heyramzi/clickup-utils/commit/61e85754b1e852283f5669b5baae8afd95c62714))
+
 ## [2.0.0](https://github.com/heyramzi/clickup-utils/compare/clickup-utils-v1.0.0...clickup-utils-v2.0.0) (2026-04-27)
 
 ### ⚠ BREAKING CHANGES

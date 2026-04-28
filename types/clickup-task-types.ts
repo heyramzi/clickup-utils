@@ -28,13 +28,27 @@ export interface ClickUpTaskCustomField {
 /**
  * Base task from GET /list/{id}/task responses.
  * Contains common fields present on all task objects.
+ *
+ * Description field semantics (verified against ClickUp API):
+ *   - Rich-text tasks (new editor: bold, lists, checkboxes): `description` and
+ *     `text_content` ship raw Quill Delta JSON (e.g. `{"ops":[{"insert":"..."}]}`).
+ *     `markdown_description` ships clean markdown.
+ *   - Legacy plain or markdown tasks: all three fields ship usable text.
+ *   - `markdown_description` is only present when the request adds
+ *     `?include_markdown_description=true`. Without that flag, callers must
+ *     handle the raw Quill JSON case themselves.
+ *
+ * Use `normalizeTaskDescription` (from `transformers/description-transformers`)
+ * to get clean markdown across all task types.
  */
 export interface ClickUpTask {
   id: string;
   custom_id: string | null;
   custom_item_id: number | null;
   name: string;
+  /** Plain text on legacy tasks; raw Quill Delta JSON on rich-text tasks. */
   text_content: string;
+  /** Plain/markdown on legacy tasks; raw Quill Delta JSON on rich-text tasks. */
   description: string;
   status: {
     id?: string;
@@ -77,6 +91,7 @@ export interface ClickUpTask {
   time_estimate: number | null;
   custom_fields: ClickUpTaskCustomField[] | Record<string, unknown>;
   url: string;
+  /** Clean markdown. Only present when the request includes `?include_markdown_description=true`. */
   markdown_description?: string;
   orderindex?: string;
   time_spent: number | null;

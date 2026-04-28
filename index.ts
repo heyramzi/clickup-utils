@@ -59,6 +59,13 @@ export {
   transformWorkspaces,
 } from "./transformers/hierarchy-transformers.js";
 
+export {
+  type DescriptionLike,
+  isQuillDeltaJson,
+  normalizeTaskDescription,
+  quillDeltaToMarkdown,
+} from "./transformers/description-transformers.js";
+
 //===============================================
 // API - Pure fetch functions
 //===============================================

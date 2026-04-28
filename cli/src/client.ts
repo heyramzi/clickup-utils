@@ -178,6 +178,10 @@ export async function getSpaces(token: string, teamId: string): Promise<ClickUpS
   return res.spaces;
 }
 
+export async function getSpace(token: string, spaceId: string): Promise<ClickUpSpace> {
+  return request<ClickUpSpace>(`/space/${spaceId}`, token);
+}
+
 // ── Folders ──────────────────────────────────────────
 
 export async function getFolders(token: string, spaceId: string): Promise<ClickUpFolder[]> {

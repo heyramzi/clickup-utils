@@ -91,14 +91,89 @@ export interface ClickUpTeamResponse {
 // SPACES
 //===============================================
 
+export interface ClickUpSpaceStatus {
+  status: string;
+  type: "open" | "custom" | "done" | "closed";
+  orderindex: number;
+  color: string;
+}
+
 export interface ClickUpSpaceFeatures {
-  due_dates: {
+  due_dates?: {
     enabled: boolean;
     start_date: boolean;
     remap_due_dates: boolean;
     remap_closed_due_date: boolean;
   };
-  sprints: {
+  sprints?: {
+    enabled: boolean;
+  };
+  time_tracking?: {
+    enabled: boolean;
+    harvest?: boolean;
+    rollup?: boolean;
+    default_to_billable?: number;
+  };
+  points?: {
+    enabled: boolean;
+  };
+  custom_items?: {
+    enabled: boolean;
+  };
+  tags?: {
+    enabled: boolean;
+  };
+  time_estimates?: {
+    enabled: boolean;
+    rollup?: boolean;
+    per_assignee?: boolean;
+  };
+  check_unresolved?: {
+    enabled: boolean;
+    subtasks?: boolean | null;
+    checklists?: boolean | null;
+    comments?: boolean | null;
+  };
+  checklists?: {
+    enabled: boolean;
+  };
+  milestones?: {
+    enabled: boolean;
+  };
+  priorities?: {
+    enabled: boolean;
+    priorities?: Array<{
+      color: string;
+      id: string;
+      orderindex: string;
+      priority: string;
+    }>;
+  };
+  custom_fields?: {
+    enabled: boolean;
+  };
+  remap_dependencies?: {
+    enabled: boolean;
+  };
+  dependency_warning?: {
+    enabled: boolean;
+  };
+  status_pies?: {
+    enabled: boolean;
+  };
+  emails?: {
+    enabled: boolean;
+  };
+  portfolios?: {
+    enabled: boolean;
+  };
+  scheduler_enabled?: boolean;
+  dependency_type_enabled?: boolean;
+  dependency_enforcement?: {
+    enforcement_mode: number;
+    enforcement_enabled: boolean;
+  };
+  reschedule_closed_dependencies?: {
     enabled: boolean;
   };
 }
@@ -109,7 +184,9 @@ export interface ClickUpSpace {
   color?: string;
   private?: boolean;
   avatar?: string | null;
+  statuses?: ClickUpSpaceStatus[];
   features?: ClickUpSpaceFeatures;
+  multiple_assignees?: boolean;
 }
 
 export interface ClickUpSpacesResponse {

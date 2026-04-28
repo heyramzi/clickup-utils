@@ -113,6 +113,13 @@ export async function getSpaces(
   return response.spaces;
 }
 
+/**
+ * Get a single space by ID
+ */
+export async function getSpace(token: string, spaceId: string): Promise<ClickUpSpace> {
+  return request<ClickUpSpace>(`/space/${spaceId}`, token);
+}
+
 //===============================================
 // FOLDER API
 //===============================================

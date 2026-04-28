@@ -73,6 +73,7 @@ export {
   getFullHierarchy,
   getList,
   getLists,
+  getSpace,
   // Shared
   getSharedHierarchy,
   // Spaces
